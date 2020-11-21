@@ -286,7 +286,7 @@ class Interface
               Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
               Curses.addstr(skill.last.to_s)
             }
-          elsif skill.last > 1
+          elsif skill.last > 0
             Curses.attron(color_pair(COLOR_YELLOW)|A_NORMAL){
               Curses.addstr(skill[0]) 
               Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
