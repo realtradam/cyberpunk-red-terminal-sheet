@@ -4,7 +4,7 @@ Lets you easily pick stats for your new character, while informing you what numb
 
 ## Sample image of what it looks like
 
-![image](https://imgur.com/BAOYRe0)
+![sample](https://i.imgur.com/BAOYRe0.png)
 
 ## How to use
 
