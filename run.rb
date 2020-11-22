@@ -1,24 +1,20 @@
 require 'curses'
 require 'pp'
 include Curses
-selector = 7
-$defaultStat = 6
 
-$defaultSkill = 0
-$defaultSkillMin = 2
 
 class Character
 
-  @@stats = [["Int " , $defaultStat],
-             ["Ref " , $defaultStat],
-             ["Dex " , $defaultStat],
-             ["Tech" , $defaultStat],
-             ["Cool" , $defaultStat],
-             ["Will" , $defaultStat],
-             ["Luck" , $defaultStat],
-             ["Move" , $defaultStat],
-             ["Body" , $defaultStat],
-             ["Emp " , $defaultStat]
+  @@stats = [["Int " , 6],
+             ["Ref " , 6],
+             ["Dex " , 6],
+             ["Tech" , 6],
+             ["Cool" , 6],
+             ["Will" , 6],
+             ["Luck" , 6],
+             ["Move" , 6],
+             ["Body" , 6],
+             ["Emp " , 6]
   ]
   @@skills = [["Awareness Skills",[
     ["Concentration", "WILL", 2],
@@ -140,12 +136,14 @@ class Character
 end
 class Interface
   def pickStats(yourStats)
-    key = nil
-    selector = 7
+    key = nil # stores what key was pressed
+    selector = 7 #what item the user currently has selected (where the > is)
     Curses.clear
-    while key != 'q'
+    while key != 'q' #loop forever untill user quits
       Curses.setpos(0,20)
       Curses.addstr("Press q to go back, and w,a,s,d keys to control")
+
+      #Display total spent stats
       Curses.setpos(3,5)
       spent = yourStats.totalStats
       if spent > 62
@@ -161,6 +159,8 @@ class Interface
           Curses.addstr("Points Spent: " + yourStats.totalStats.to_s+ "/62")
         }
       end
+
+      #Displaying all stats + the "selector"
       yourStats.statsVar.each_with_index { |pair,index|
         Curses.setpos(index + 5, 3)
         if pair[1] <= 8 && pair[1] >= 2
@@ -212,14 +212,22 @@ class Interface
           }
         end
       }
+
+
       Curses.refresh
-      key = Curses.getch
+      key = Curses.getch #User input
       Curses.clear
+
+    #Checking what the user input, and acting accordingly
+      
+      #Move Up and Down
       if key == 'w' && selector > 0
         selector -= 1
       elsif key == 's' && selector < (yourStats.statsVar.length - 1)
         selector += 1
       end
+
+      #Increase/Decrease Value
       if key == 'a' 
         yourStats.statsVar[selector][1] -= 1
       elsif key == 'd'
@@ -228,13 +236,20 @@ class Interface
 
     end
   end
+
+
   def pickSkills(character)
-    key = nil
-    selector = [0,0]
-    Curses.clear
-    while key != 'q'
+    key = nil #Store what key the user pressed
+    selector = [0,0] #Where the selector is(the > character)
+    #First value is which "group" the selector is in
+    #Second value is what skill in that group is selected
+  
+    Curses.clear #Clear the screen
+    while key != 'q' #Run forever untill you quit
       Curses.setpos(0,20)
       Curses.addstr("Press q to go back, and w,a,s,d keys to control, z to sort")
+
+      #Drawing the total amount of skill points used
       Curses.setpos(3,5)
       spent = character.totalSkills
       if spent > 86
@@ -250,17 +265,23 @@ class Interface
           Curses.addstr("Points Spent: " + spent.to_s + "/86")
         }
       end
-      itemItr = 0 # which item we are on, in the iteration
+
+      #Drawing the skill table
+
+      itemItr = 0 # which item we are on, ignoring groups and counting from the first skill
       # we add the "group" index to this number
-      lastIndex = 0 # checks if you want to do a new column
-      oldOffset = 0 # using this lets you split it into columns
-      col = 0
+      lastIndex = 0 # checks which column the program should be drawing in
+      oldOffset = 0 # How far the current column should be from the left side of the screen
+      colCount = 3 #Change this to be how many columns you want, 3 looks best
       character.skills.each_with_index do |group,index|
-        unless lastIndex == (index / 3) # change number to be how many columns you want
+        unless lastIndex == (index / colCount)
           itemItr = 0
-          lastIndex = (index / 3) # change number to how many columns you want
+          lastIndex = (index / colCount)
           oldOffset += index - oldOffset
         end
+        #setpos is of the format x,y
+        #the y portion determines which column to draw in
+        #while the x determines the which row
         Curses.setpos(itemItr + ((index - oldOffset) * 2) + 5, (index / 3) * 45)
         Curses.addstr(" " + group[0])
         group[1].each_with_index do |skill,skillIndex|
@@ -271,37 +292,38 @@ class Interface
           if (skill.last > 6 || skill.last < 0) || (character.minimumSkill.include?(skill[0]) && skill.last < 2)
             Curses.attron(color_pair(COLOR_RED)|A_NORMAL){
               Curses.addstr(skill[0]) 
-              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
+              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (lastIndex * 45) + 42 - skill.last.to_s.length)
               Curses.addstr(skill.last.to_s)
             }
           elsif skill.last > 5
             Curses.attron(color_pair(COLOR_CYAN)|A_NORMAL){
               Curses.addstr(skill[0]) 
-              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
+              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (lastIndex * 45) + 42 - skill.last.to_s.length)
               Curses.addstr(skill.last.to_s)
             }
           elsif skill.last > 3
             Curses.attron(color_pair(COLOR_GREEN)|A_NORMAL){
               Curses.addstr(skill[0]) 
-              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
+              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (lastIndex * 45) + 42 - skill.last.to_s.length)
               Curses.addstr(skill.last.to_s)
             }
           elsif skill.last > 0
             Curses.attron(color_pair(COLOR_YELLOW)|A_NORMAL){
               Curses.addstr(skill[0]) 
-              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
+              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (lastIndex * 45) + 42 - skill.last.to_s.length)
               Curses.addstr(skill.last.to_s)
             }
           else
             Curses.attron(color_pair(COLOR_MAGENTA)|A_NORMAL){
               Curses.addstr(skill[0]) 
-              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (((index) / 3) * 45) + 42 - skill.last.to_s.length)
+              Curses.setpos(itemItr + ((index  - oldOffset) * 2)   + 5, (lastIndex * 45) + 42 - skill.last.to_s.length)
               Curses.addstr(skill.last.to_s)
             }
           end
 
 
-
+          #Draws the right hand side decortive lines of the columns
+          #Also draws the selector(the > character)
           if group[1].first == skill
             Curses.addstr(" ╮")
           elsif group[1].last == skill
@@ -316,7 +338,7 @@ class Interface
         end
       end
 
-
+      #Gets user input, and then decides whe the user wants based on that
       Curses.refresh
       key = Curses.getch
       Curses.clear
@@ -401,10 +423,5 @@ Curses.init_pair(COLOR_GREEN,COLOR_GREEN,COLOR_BLACK) #High Value
 Curses.init_pair(COLOR_YELLOW,COLOR_YELLOW,COLOR_BLACK) #Low Value
 Curses.init_pair(COLOR_MAGENTA,COLOR_RED,COLOR_BLACK) #Bad Value
 
-
-
-
 interface.menu(me)
 
-
-#interface.pickStats(me)
