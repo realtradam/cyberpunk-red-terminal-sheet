@@ -105,6 +105,18 @@ class Character
     }
     sum
   end
+  def hitPoints
+    10 + (5 * ((@@stats[8][1] + @@stats[5][1])/2.0).ceil)
+  end
+  def SWWThreshold
+    (self.hitPoints.to_f / 2.0).ceil
+  end
+  def deathSave
+    @@stats[8][1]
+  end
+  def humanity
+    @@stats[9][1] * 10
+  end
   def totalSkills
     sum = 0
     @@skills.each do |group|
@@ -159,7 +171,7 @@ class Interface
           Curses.addstr("Points Spent: " + yourStats.totalStats.to_s+ "/62")
         }
       end
-
+      
       #Displaying all stats + the "selector"
       yourStats.statsVar.each_with_index { |pair,index|
         Curses.setpos(index + 5, 3)
@@ -212,7 +224,29 @@ class Interface
           }
         end
       }
+      
+      spacing = 25
+      numberSpacing = spacing - 1
 
+      Curses.setpos(5, spacing)
+      Curses.addstr(":Hit Points")
+      Curses.setpos(5, numberSpacing - yourStats.hitPoints.to_s.length)
+      Curses.addstr(yourStats.hitPoints.to_s)
+
+      Curses.setpos(7, spacing)
+      Curses.addstr(":Seriously Wounded Wound Threshold")
+      Curses.setpos(7, numberSpacing - yourStats.SWWThreshold.to_s.length)
+      Curses.addstr(yourStats.SWWThreshold.to_s)
+
+      Curses.setpos(9, spacing)
+      Curses.addstr(":Death Save")
+      Curses.setpos(9, numberSpacing - yourStats.deathSave.to_s.length)
+      Curses.addstr(yourStats.deathSave.to_s)
+
+      Curses.setpos(11, spacing)
+      Curses.addstr(":Humanity")
+      Curses.setpos(11, numberSpacing - yourStats.humanity.to_s.length)
+      Curses.addstr(yourStats.humanity.to_s)
 
       Curses.refresh
       key = Curses.getch #User input
